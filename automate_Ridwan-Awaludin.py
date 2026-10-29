@@ -1,9 +1,9 @@
-"""Export raw and preprocessed Iris data for the experiment repository."""
+"""Export raw and preprocessed breast cancer data for the experiment repository."""
 
 from pathlib import Path
 
 import pandas as pd
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_breast_cancer
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -18,13 +18,13 @@ def main() -> None:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-    iris = load_iris(as_frame=True)
-    features = iris.data.copy()
-    target = iris.target.rename("target")
+    dataset = load_breast_cancer(as_frame=True)
+    features = dataset.data.copy()
+    target = dataset.target.rename("target")
     raw_data = features.copy()
     raw_data["target"] = target
-    raw_data["species"] = target.map(dict(enumerate(iris.target_names)))
-    raw_path = RAW_DIR / "iris_raw.csv"
+    raw_data["diagnosis"] = target.map(dict(enumerate(dataset.target_names)))
+    raw_path = RAW_DIR / "breast_cancer_raw.csv"
     raw_data.to_csv(raw_path, index=False)
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -47,12 +47,12 @@ def main() -> None:
         ("train", X_train_scaled, y_train),
         ("test", X_test_scaled, y_test),
     ):
-        processed = pd.DataFrame(values, columns=iris.feature_names)
+        processed = pd.DataFrame(values, columns=dataset.feature_names)
         processed["target"] = labels.to_numpy()
-        processed["species"] = processed["target"].map(
-            dict(enumerate(iris.target_names))
+        processed["diagnosis"] = processed["target"].map(
+            dict(enumerate(dataset.target_names))
         )
-        output_path = PROCESSED_DIR / f"iris_{split}_preprocessed.csv"
+        output_path = PROCESSED_DIR / f"breast_cancer_{split}_preprocessed.csv"
         processed.to_csv(output_path, index=False)
 
     print(f"Raw dataset: {raw_path} ({len(raw_data)} rows)")
